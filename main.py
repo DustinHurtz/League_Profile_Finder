@@ -6,15 +6,23 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
+from player import Player
 
 
-def main():
-    # Gets name of player we are going to look up on OPGG
-    name = input("Enter in the User Name of the User you'd like to search\n")
+def print_ui():
+    print("1. Add a Player")
+    print("2. Look up Player")
+    print("3. See Player List")
+    print("0. Quit Program")
+    return
 
-    # Starts the selenium driver and directs it to the OPGG website
+
+def get_player_data(name):
+    # Starting the Selenium driver
     source_driver = 'chromedriver.exe'
     driver = webdriver.Chrome(source_driver)
+
+    # Going to OPGG
     driver.get("https://na.op.gg/")
 
     # Enter the name into the search bar
@@ -36,20 +44,65 @@ def main():
         lp_amount = driver.find_element(By.CLASS_NAME, "LeaguePoints")
         win_ratio = driver.find_element(By.CLASS_NAME, "winratio")
 
-        # Prints out the data to the screen
-        print(rank.text + " " + lp_amount.text + '\n')
-        print(win_ratio.text + "\n")
+        return Player(name, rank.text, lp_amount.text, win_ratio.text)
+        # Quits out of driver
 
-        # Quits out of the driver
-        driver.quit()
+        #
+
 
     except:
         # Sets the rank as Unranked, prints it out, and then quits the driver
-        rank = "Unranked"
-
-        print(rank + '\n')
-
         driver.quit()
+
+        return Player(name, "Unranked", "None", "None")
+
+
+def main():
+    # Initializes the variable that holds the selection of the user
+    option: str = "none"
+
+    Players = []
+    # Starting the selenium driver
+    # Make it where selenium starts up on its self everytime we just do option 1 and exits after
+    while option > '0':
+        # Prints out the ui and asks the user for input
+        print_ui()
+        option = input()
+        # Adds a player to the list
+        if option == '1':
+            name = input("What is the Player's username?\n")
+            Players.append(get_player_data(name))
+
+            print("Player successfully added")
+
+            pass
+
+        # Looks up a player's name in the list
+        if option == '2':
+            name = input("What is the Player's username?\n")
+            name_check: int = 0
+            for player in Players:
+                if name == player.get_user_name():
+                    print(player.get_user_name() + "\n" +
+                          player.get_rank() + " " +
+                          player.get_lp() + " LP " +
+                          player.get_win_ratio() + "\n")
+                    name_check = 1
+            if name_check == 0:
+                print("Player Not Found \n")
+            pass
+
+        # Prints out the entire List
+        if option == '3':
+            count = 1
+            for player in Players:
+                print(str(count) + '. '
+                      + player.get_user_name() + ' | '
+                      + player.get_rank() + " | "
+                      + player.get_lp() + "LP  | "
+                      + player.get_win_ratio() + " | ")
+                count = count + 1
+            pass
 
 
 main()
